@@ -14,6 +14,14 @@ if GG_Maou_env_loaded then
     return warn("[ScriptLoader V3] Environment already loaded")
 end
 
+------------- Super Global Environment -------------
+GG = GG or (getgenv and getgenv().GG) or (_G and _G.GG) or (shared and shared.GG) or false
+
+if not GG then
+    return warn("[ScriptLoader V3] GG environment not found")
+end
+
+
 --============= PHASE 1: SERVICE SETUP =============--
 
 ------------- Service Obfuscation Map -------------

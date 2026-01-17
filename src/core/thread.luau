@@ -13,6 +13,13 @@ if GG_Maou_thread_loaded then
     return warn("[ScriptLoader V3] Thread already loaded")
 end
 
+------------- Super Global Environment -------------
+GG = GG or (getgenv and getgenv().GG) or (_G and _G.GG) or (shared and shared.GG) or false
+
+if not GG then
+    return warn("[ScriptLoader V3] GG environment not found")
+end
+
 ------------- Library References -------------
 
 local tk = task -- cached ref
@@ -184,7 +191,7 @@ GG.ccreate = function(fn: () -> any): thread
 end
 
 -- Resume coroutine (obfuscated: cresume)
-GG.cresume = function(co: thread, ...): boolean, any
+GG.cresume = function(co: thread, ...): ...(any)
     return co.resume(co, ...)
 end
 

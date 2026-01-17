@@ -13,6 +13,13 @@ if GG_Maou_string_loaded then
     return warn("[ScriptLoader V3] String already loaded")
 end
 
+------------- Super Global Environment -------------
+GG = GG or (getgenv and getgenv().GG) or (_G and _G.GG) or (shared and shared.GG) or false
+
+if not GG then
+    return warn("[ScriptLoader V3] GG environment not found")
+end
+
 ------------- String Library Reference -------------
 
 GG.str = string

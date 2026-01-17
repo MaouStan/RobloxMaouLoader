@@ -55,6 +55,9 @@ local GG_Meta = {
             return service
         end
 
+        -- Warning for not found keys
+        warn(`[ScriptLoader V3] GG key not found: {key}`)
+
         -- Key not found (no warning to avoid spam)
         return nil
     end,
@@ -83,6 +86,9 @@ GG = ggTable
 _G.GG = ggTable
 if getgenv then
     getgenv().GG = ggTable
+end
+if shared then
+    shared.GG = ggTable
 end
 GG_Maou_init_loaded = true
 
