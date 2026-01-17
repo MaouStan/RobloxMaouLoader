@@ -3,21 +3,21 @@
 -- ScriptLoader V3 - Core Thread
 -- Thread management and parallel execution utilities
 
-------------- Anti-Reexecute -------------
-
-if not GG_Maou_init_loaded then
-    return warn("[ScriptLoader V3] Init not loaded")
-end
-
-if GG_Maou_thread_loaded then
-    return warn("[ScriptLoader V3] Thread already loaded")
-end
-
 ------------- Super Global Environment -------------
 GG = GG or (getgenv and getgenv().GG) or (_G and _G.GG) or (shared and shared.GG) or false
 
 if not GG then
     return warn("[ScriptLoader V3] GG environment not found")
+end
+
+------------- Anti-Reexecute -------------
+
+if not GG.GG_Maou_init_loaded then
+    return warn("[ScriptLoader V3] Init not loaded")
+end
+
+if GG.GG_Maou_thread_loaded then
+    return warn("[ScriptLoader V3] Thread already loaded")
 end
 
 ------------- Library References -------------
@@ -354,7 +354,7 @@ end
 
 ------------- Mark Loaded -------------
 
-GG_Maou_thread_loaded = true
+GG.GG_Maou_thread_loaded = true
 
 ------------- Export -------------
 

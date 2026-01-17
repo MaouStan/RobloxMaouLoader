@@ -1,9 +1,16 @@
 -- ScriptLoader V3 - Core Init
 -- Super Global Environment with Metatable
 
-------------- Anti-Reexecute -------------
+local tmp = (getgenv and getgenv()) or _G or shared or false
 
-if GG_Maou_init_loaded then
+if not tmp then
+    return warn("[ScriptLoader V3] Global environment not found")
+end
+
+------------- Anti-Reexecute -------------
+local tmpGG = GG or (getgenv and getgenv().GG) or (_G and _G.GG) or (shared and shared.GG) or false
+
+if tmpGG and tmpGG.GG_Maou_init_loaded then
     return warn("[ScriptLoader V3] Super Global Environment already loaded")
 end
 
@@ -90,7 +97,7 @@ end
 if shared then
     shared.GG = ggTable
 end
-GG_Maou_init_loaded = true
+GG.GG_Maou_init_loaded = true
 
 ------------- OBF Fixer -------------
 

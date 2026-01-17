@@ -3,21 +3,21 @@
 -- ScriptLoader V3 - Core Math
 -- Math library utilities and helpers
 
-------------- Anti-Reexecute -------------
-
-if not GG_Maou_init_loaded then
-    return warn("[ScriptLoader V3] Init not loaded")
-end
-
-if GG_Maou_math_loaded then
-    return warn("[ScriptLoader V3] Math already loaded")
-end
-
 ------------- Super Global Environment -------------
 GG = GG or (getgenv and getgenv().GG) or (_G and _G.GG) or (shared and shared.GG) or false
 
 if not GG then
     return warn("[ScriptLoader V3] GG environment not found")
+end
+
+------------- Anti-Reexecute -------------
+
+if not GG.GG_Maou_init_loaded then
+    return warn("[ScriptLoader V3] Init not loaded")
+end
+
+if GG.GG_Maou_math_loaded then
+    return warn("[ScriptLoader V3] Math already loaded")
 end
 
 ------------- Math Library Reference -------------
@@ -343,7 +343,7 @@ end
 
 ------------- Mark Loaded -------------
 
-GG_Maou_math_loaded = true
+GG.GG_Maou_math_loaded = true
 
 ------------- Export -------------
 
