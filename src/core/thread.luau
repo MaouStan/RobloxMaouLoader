@@ -191,8 +191,8 @@ end
 ------------- SECTION 2: Coroutine Parallel Execution -------------
 
 -- Coroutine status (obfuscated: cstatus)
-GG.cstatus = function(co)
-    return co.status(co)
+GG.cstatus = function(co: thread): string
+    return coroutine.status(co)
 end
 
 -- Create coroutine (obfuscated: ccreate)

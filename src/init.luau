@@ -91,6 +91,7 @@ setmetatable(ggTable, GG_Meta)
 -- Store GG in _G and getgenv for global access
 GG = ggTable
 _G.GG = ggTable
+GG.GG = ggTable  -- Self-reference
 if getgenv then
     getgenv().GG = ggTable
 end
