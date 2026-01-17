@@ -1,5 +1,5 @@
--- ScriptLoader V3 - Main Entry Point (loadstring compatible)
--- Loads init and all core modules
+-- ScriptLoader V3 - Main Entry Point (loadstring only)
+-- Loads init and all core modules via GG environment
 
 ------------- Anti-Reexecute -------------
 
@@ -7,40 +7,19 @@ if _G.GG_Maou_main_loaded then
     return _G.GG
 end
 
-------------- Find Script Path (for require) -------------
+------------- Get GG Environment (init must be loaded first) -------------
 
--- When loaded via loadstring, we need to determine the path
-local scriptPath = script or (getfenv and getfenv(2).script) or nil
-
-------------- Load Init (Super Global Environment) -------------
-
-local function loadInit()
-    if scriptPath then
-        -- Local loading via require
-        return require(scriptPath:FindFirstChild("init.luau") or scriptPath.Parent.init)
-    else
-        -- Remote loading - init should be loaded first
-        return _G.GG or warn("[ScriptLoader V3] Init not loaded. Load init.luau first!")
-    end
-end
-
-local success, init = pcall(loadInit)
-
-if not success then
-    return warn("[ScriptLoader V3] Failed to load init:", init)
-end
-
-local GG = init or _G.GG
+local GG = _G.GG
 
 if not GG then
-    return warn("[ScriptLoader V3] GG environment not found")
+    return warn("[ScriptLoader V3] GG not found. Load init.luau first via loadstring!")
 end
 
-------------- Core Module Loader -------------
+------------- Core Modules (for remote loading) -------------
 
--- Core modules to load (order matters)
+-- Core modules list (order matters)
 local coreModules = {
-    "task",      -- Task utilities (must load first - others depend on it)
+    "task",      -- Task utilities (must load first)
     "thread",    -- Thread management
     "math",      -- Math utilities
     "table",     -- Table utilities
@@ -50,41 +29,47 @@ local coreModules = {
     "teleport",  -- Teleport utilities
 }
 
-------------- Load All Core Modules -------------
+------------- Load Core Modules from GitHub -------------
+
+local baseUrl = "https://raw.githubusercontent.com/MaouStan/RobloxMaouLoader/refs/heads/master/src/core/"
+
+local function loadModule(name: string): boolean
+    local url = baseUrl .. name .. ".luau"
+
+    local success, code = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not success or not code then
+        warn(`[ScriptLoader V3] Failed to fetch {name}.luau`)
+        return false
+    end
+
+    local loadFn = loadstring(code)
+    if not loadFn then
+        warn(`[ScriptLoader V3] Failed to loadstring {name}.luau`)
+        return false
+    end
+
+    local execSuccess, result = pcall(loadFn)
+    if not execSuccess then
+        warn(`[ScriptLoader V3] Failed to execute {name}.luau: {result}`)
+        return false
+    end
+
+    return true
+end
+
+------------- Load All Modules -------------
 
 local loaded = {}
 local failed = {}
 
-if scriptPath then
-    -- Local loading
-    local coreFolder = scriptPath:FindFirstChild("core")
-
-    if coreFolder then
-        for _, moduleName in coreModules do
-            local moduleFile = coreFolder:FindFirstChild(moduleName .. ".luau")
-
-            if moduleFile then
-                local modSuccess, modResult = pcall(function()
-                    return require(moduleFile)
-                end)
-
-                if modSuccess then
-                    table.insert(loaded, moduleName)
-                else
-                    table.insert(failed, moduleName)
-                    warn(`[ScriptLoader V3] Failed to load {moduleName}: {modResult}`)
-                end
-            else
-                table.insert(failed, moduleName)
-                warn(`[ScriptLoader V3] Module not found: {moduleName}`)
-            end
-        end
-    end
-else
-    -- Remote loading - assume core modules already loaded via loadAll
-    print("[ScriptLoader V3] Remote mode - core modules should be loaded via GG.loadAll()")
-    for _, moduleName in coreModules do
+for _, moduleName in coreModules do
+    if loadModule(moduleName) then
         table.insert(loaded, moduleName)
+    else
+        table.insert(failed, moduleName)
     end
 end
 
@@ -95,10 +80,10 @@ _G.GG_Maou_main_loaded = true
 ------------- Summary -------------
 
 if #failed > 0 then
-    warn(`[ScriptLoader V3] Failed to load: {table.concat(failed, ", ")}`)
+    warn(`[ScriptLoader V3] Failed: {table.concat(failed, ", ")}`)
 end
 
-print(`[ScriptLoader V3] Loaded {#loaded}/{#coreModules} core modules`)
+print(`[ScriptLoader V3] Loaded {#loaded}/{#coreModules} modules`)
 
 ------------- Export -------------
 

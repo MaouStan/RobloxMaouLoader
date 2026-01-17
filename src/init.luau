@@ -259,7 +259,7 @@ GG.CoreModules = {
 }
 
 -- Base GitHub URL for raw content
-GG.GitHubRaw = "https://raw.githubusercontent.com/MaouStan/RobloxMaouLoader/main/src/core/"
+GG.GitHubRaw = "https://raw.githubusercontent.com/MaouStan/RobloxMaouLoader/refs/heads/master/src/core/"
 
 -- Load single module from URL (obfuscated: loadMod)
 GG.loadMod = function(name: string, baseUrl: string?): boolean

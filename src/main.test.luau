@@ -1,15 +1,20 @@
--- ScriptLoader V3 - Test File
+-- ScriptLoader V3 - Test File (loadstring compatible)
 -- Tests all loaded cached functions
 
 ------------- Anti-Reexecute -------------
 
 if _G.ScriptLoaderTestExecuted then
-    return _G.ScriptLoaderTestResult
+    print("[ScriptLoader V3] Test already executed, skipping...")
+    return
 end
 
-------------- Load Main -------------
+------------- Get GG (init + main must be loaded first) -------------
 
-local GG = require(script.Parent.main)
+local GG = _G.GG
+
+if not GG then
+    return warn("[ScriptLoader V3] GG not found. Load init.luau and main.luau first!")
+end
 
 ------------- Test Utilities -------------
 
@@ -23,13 +28,11 @@ local function test(name: string, fn: () -> ())
 end
 
 local function testType(name: string, value: any, expected: string)
-    local success, result = pcall(function()
-        return typeof(value) == expected
-    end)
-    if success and result then
+    local actual = typeof(value)
+    if actual == expected then
         print(`[PASS] {name} is {expected}`)
     else
-        warn(`[FAIL] {name} expected {expected}, got {typeof(value)}`)
+        warn(`[FAIL] {name} expected {expected}, got {actual}`)
     end
 end
 
@@ -48,8 +51,8 @@ testType("GG.CFr", GG.CFr, "table")
 
 ------------- Test Task Functions -------------
 
-test("GG.twait(0.1)", function()
-    return GG.twait(0.1)
+test("GG.twait(0.01)", function()
+    return GG.twait(0.01)
 end)
 
 test("GG.mrandom(1, 100)", function()
@@ -119,7 +122,7 @@ end)
 
 test("GG.tmerge({a=1}, {b=2})", function()
     local t = GG.tmerge({a = 1}, {b = 2})
-    return t.a .. "," .. t.b
+    return tostring(t.a) .. "," .. tostring(t.b)
 end)
 
 test("GG.tkeys({a=1, b=2})", function()
@@ -159,54 +162,23 @@ test("GG.CFr.new(0, 10, 0)", function()
     return `{cf.Position.X}, {cf.Position.Y}, {cf.Position.Z}`
 end)
 
-------------- Test Error Handler -------------
+------------- Test Remote Loader -------------
 
-test("GG.safeCall(function() error('test error') end, 'test')", function()
-    return "error_handler_test"
+test("GG.GitHubRaw", function()
+    return GG.GitHubRaw
 end)
 
 ------------- Summary -------------
 
 print("=== Test Suite Complete ===")
-print(`[INFO] GG Environment: {GG}`)
+print(`[INFO] GG: {typeof(GG)}`)
 print(`[INFO] RNG: {typeof(GG.RNG)}`)
 print(`[INFO] SafeCall: {typeof(GG.safeCall)}`)
 print(`[INFO] GetPcall: {typeof(GG.GetPcall)}`)
+print(`[INFO] loadAll: {typeof(GG.loadAll)}`)
 
-------------- Export for Manual Testing -------------
+------------- Mark Executed -------------
 
--- Only export if NOT loaded via loadstring (check if script.Parent exists)
-if script and script.Parent then
-    _G.ScriptLoaderTestExecuted = true
-    _G.ScriptLoaderTestResult = {
-        GG = GG,
-        -- Quick access for testing
-        task = {
-            wait = GG.twait,
-            spawn = GG.tspawn,
-            defer = GG.tdefer,
-        },
-        math = {
-            random = GG.mrandom,
-            floor = GG.mfloor,
-            ceil = GG.mceil,
-            clamp = GG.mclamp,
-        },
-        string = {
-            sub = GG.strsub,
-            len = GG.strlen,
-            upper = GG.strupper,
-            lower = GG.strlower,
-        },
-        table = {
-            clone = GG.tclone,
-            merge = GG.tmerge,
-            keys = GG.tkeys,
-            reverse = GG.trev,
-        },
-    }
-    return _G.ScriptLoaderTestResult
-end
+_G.ScriptLoaderTestExecuted = true
 
--- No return when loaded via loadstring (GG is already in _G)
-
+------------- No Export (GG already in _G) -------------
