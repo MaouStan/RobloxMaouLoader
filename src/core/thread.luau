@@ -226,7 +226,7 @@ GG.cis = function(co): boolean
 end
 
 -- Parallel execute - run multiple functions and wait for all (obfuscated: cparallel)
-GG.cparallel = function(...: () -> any): {...any}
+GG.cparallel = function(...: () -> any): (...any)
     local tasks = {...}
     local coroutines = {}
     local results = {}
@@ -256,7 +256,7 @@ end
 
 -- Parallel execute with key management (obfuscated: cparallelkey)
 -- Kills old threads with same key group before spawning new batch
-GG.cparallelkey = function(keyGroup: string, ...: () -> any): {...any}
+GG.cparallelkey = function(keyGroup: string, ...: () -> any): (...any)
     local registry = GG.thr
 
     -- Kill existing threads in group

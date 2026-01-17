@@ -201,7 +201,7 @@ GG.tstr = function(t: {[any]: any}, indent: string?): string
     for k, v in t do
         local key = type(k) == "string" and `"{k}"` or tostring(k)
         if type(v) == "table" then
-            GG.tin(result, `    {space}{key} = {{{GG.tstr(v, space .. "    ")}}}`)
+            GG.tin(result, `    {space}{key} = \{ {GG.tstr(v, space .. "    ")} \}`)
         else
             local val = type(v) == "string" and `"{v}"` or tostring(v)
             GG.tin(result, `    {space}{key} = {val}`)
