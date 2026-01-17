@@ -18,11 +18,6 @@ end
 -- Internal storage for GG values
 local GG_Internal = {}
 
--- Store original environment references (without metatable)
-local _G_Ref = _G
-local getgenv_Ref = getgenv and getgenv() or nil
-local shared_Ref = shared
-
 -- Protected keys that cannot be overwritten
 local ProtectedKeys = {
     GG = true,
@@ -35,11 +30,11 @@ local ProtectedKeys = {
     Lighting = true,
 }
 
--- Metatable for GG with __index and __newindex
+-- Metatable for GG with __index only
 local GG_Meta = {
-    -- Read: Check internal → _G → getgenv → services
+    -- Read: Check internal storage → service loading
     __index = function(self, key)
-        -- Warning if accessed on nil GG (shouldn't happen after kick check)
+        -- Warning if accessed on nil GG
         if not self then
             warn("[ScriptLoader V3] WARNING: __index called on nil GG")
             return nil
@@ -51,28 +46,6 @@ local GG_Meta = {
             return val
         end
 
-        -- Then check _G (rawget, no recursion)
-        val = rawget(_G_Ref, key)
-        if val ~= nil then
-            return val
-        end
-
-        -- Then check getgenv (rawget, no recursion)
-        if getgenv_Ref and getgenv_Ref ~= _G_Ref then
-            val = rawget(getgenv_Ref, key)
-            if val ~= nil then
-                return val
-            end
-        end
-
-        -- Then check shared (rawget, no recursion)
-        if shared_Ref and shared_Ref ~= _G_Ref then
-            val = rawget(shared_Ref, key)
-            if val ~= nil then
-                return val
-            end
-        end
-
         -- Service auto-loading (lazy load services)
         local success, service = pcall(function()
             return game:GetService(key)
@@ -82,38 +55,8 @@ local GG_Meta = {
             return service
         end
 
+        -- Key not found (no warning to avoid spam)
         return nil
-    end,
-
-    -- Write: Store internally, protect critical keys
-    -- __newindex = function(self, key, value)
-    --     -- Protect critical keys from being overwritten
-    --     if ProtectedKeys[key] then
-    --         warn(`[ScriptLoader V3] Protected key "{key}" cannot be overwritten`)
-    --         return
-    --     end
-
-    --     -- Store in internal storage
-    --     GG_Internal[key] = value
-    -- end,
-
-    -- Pair/iteration support
-    __pairs = function(self)
-        local merged = {}
-
-        -- Merge internal storage
-        for k, v in GG_Internal do
-            merged[k] = v
-        end
-
-        -- Merge _G (rawget only)
-        for k, v in pairs(_G_Ref) do
-            if merged[k] == nil then
-                merged[k] = v
-            end
-        end
-
-        return next, merged, nil
     end,
 
     -- Tostring for debugging
