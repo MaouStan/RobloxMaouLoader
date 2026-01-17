@@ -39,6 +39,12 @@ local ProtectedKeys = {
 local GG_Meta = {
     -- Read: Check internal → _G → getgenv → services
     __index = function(self, key)
+        -- Warning if accessed on nil GG (shouldn't happen after kick check)
+        if not self then
+            warn("[ScriptLoader V3] WARNING: __index called on nil GG")
+            return nil
+        end
+
         -- First check internal storage
         local val = GG_Internal[key]
         if val ~= nil then
@@ -117,7 +123,12 @@ local GG_Meta = {
 }
 
 -- Create GG as shared environment (global access)
-GG = (getgenv and getgenv()) or _G or shared or {}
+GG = (getgenv and getgenv()) or _G or shared or false
+
+-- Kick if executor doesn't support getgenv/_G
+if not GG then
+    error("[ScriptLoader V3] Executor not supported: getgenv/_G/shared unavailable")
+end
 
 -- Apply metatable to GG
 setmetatable(GG, GG_Meta)
