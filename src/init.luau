@@ -65,20 +65,25 @@ local GG_Meta = {
     end,
 }
 
--- Create GG as shared environment (global access)
-GG = (getgenv and getgenv()) or _G or shared or false
+-- Create GG as separate table with global access
+local ggTable = {}
 
 -- Kick if executor doesn't support getgenv/_G
-if not GG then
-    error("[ScriptLoader V3] Executor not supported: getgenv/_G/shared unavailable")
+if not _G and not (getgenv and getgenv()) then
+    error("[ScriptLoader V3] Executor not supported: _G/getgenv unavailable")
 end
 
--- Apply metatable to GG
-setmetatable(GG, GG_Meta)
+-- Apply metatable to GG table
+setmetatable(ggTable, GG_Meta)
 
 ------------- Core Assignment -------------
 
-GG.GG = GG
+-- Store GG in _G and getgenv for global access
+GG = ggTable
+_G.GG = ggTable
+if getgenv then
+    getgenv().GG = ggTable
+end
 GG_Maou_init_loaded = true
 
 ------------- OBF Fixer -------------
