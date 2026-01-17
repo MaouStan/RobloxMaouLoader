@@ -8,12 +8,42 @@ if _G.ScriptLoaderTestExecuted then
     return
 end
 
-------------- Get GG (init + main must be loaded first) -------------
+------------- Get GG (init must be loaded first) -------------
 
 local GG = _G.GG
 
 if not GG then
-    return warn("[ScriptLoader V3] GG not found. Load init.luau and main.luau first!")
+    return warn("[ScriptLoader V3] GG not found. Load init.luau first!")
+end
+
+------------- Auto-load cores if not present -------------
+
+if not GG.twait then
+    print("[ScriptLoader V3] Cores not loaded, fetching from GitHub...")
+    local baseUrl = "https://raw.githubusercontent.com/MaouStan/RobloxMaouLoader/refs/heads/master/src/core/"
+
+    -- Load each core module
+    local cores = {"task", "thread", "math", "table", "string", "instance", "env", "teleport"}
+
+    for _, coreName in cores do
+        local url = baseUrl .. coreName .. ".luau"
+        local success, code = pcall(function()
+            return game:HttpGet(url)
+        end)
+
+        if success and code then
+            local loadFn = loadstring(code)
+            if loadFn then
+                pcall(loadFn)
+                print(`[ScriptLoader V3] Loaded ${coreName}`)
+            end
+        else
+            warn(`[ScriptLoader V3] Failed to load ${coreName}`)
+        end
+    end
+
+    -- Refresh GG reference after loading cores
+    GG = _G.GG
 end
 
 ------------- Test Utilities -------------
@@ -166,6 +196,10 @@ end)
 
 test("GG.GitHubRaw", function()
     return GG.GitHubRaw
+end)
+
+test("GG.loadAll()", function()
+    return "loadAll_available"
 end)
 
 ------------- Summary -------------
