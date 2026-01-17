@@ -10,7 +10,21 @@ end
 
 ------------- Get GG (init must be loaded first) -------------
 
-local GG = _G.GG
+local GG = GG or (function()
+    if getgenv then
+        return getgenv().GG
+    elseif _G then
+        return _G.GG
+    elseif shared then
+        return shared.GG
+    else
+        return false
+    end
+end)()
+
+if not GG then
+    return warn("[ScriptLoader V3] GG environment not found")
+end
 
 if not GG then
     return warn("[ScriptLoader V3] GG not found. Load init.luau first!")

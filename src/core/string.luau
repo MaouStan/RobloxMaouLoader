@@ -4,7 +4,17 @@
 -- String library utilities and helpers
 
 ------------- Super Global Environment -------------
-GG = GG or (getgenv and getgenv().GG) or (_G and _G.GG) or (shared and shared.GG) or false
+GG = GG or (function()
+    if getgenv then
+        return getgenv().GG
+    elseif _G then
+        return _G.GG
+    elseif shared then
+        return shared.GG
+    else
+        return false
+    end
+end)()
 
 if not GG then
     return warn("[ScriptLoader V3] GG environment not found")
