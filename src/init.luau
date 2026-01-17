@@ -80,16 +80,16 @@ local GG_Meta = {
     end,
 
     -- Write: Store internally, protect critical keys
-    __newindex = function(self, key, value)
-        -- Protect critical keys from being overwritten
-        if ProtectedKeys[key] then
-            warn(`[ScriptLoader V3] Protected key "{key}" cannot be overwritten`)
-            return
-        end
+    -- __newindex = function(self, key, value)
+    --     -- Protect critical keys from being overwritten
+    --     if ProtectedKeys[key] then
+    --         warn(`[ScriptLoader V3] Protected key "{key}" cannot be overwritten`)
+    --         return
+    --     end
 
-        -- Store in internal storage
-        GG_Internal[key] = value
-    end,
+    --     -- Store in internal storage
+    --     GG_Internal[key] = value
+    -- end,
 
     -- Pair/iteration support
     __pairs = function(self)
@@ -116,8 +116,8 @@ local GG_Meta = {
     end,
 }
 
--- Create GG as fresh table (not shared with _G initially)
-GG = {}
+-- Create GG as shared environment (global access)
+GG = (getgenv and getgenv()) or _G or shared or {}
 
 -- Apply metatable to GG
 setmetatable(GG, GG_Meta)
@@ -125,7 +125,6 @@ setmetatable(GG, GG_Meta)
 ------------- Core Assignment -------------
 
 GG.GG = GG
-_G.GG = GG -- Also expose to _G
 GG_Maou_init_loaded = true
 
 ------------- OBF Fixer -------------
