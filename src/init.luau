@@ -235,7 +235,7 @@ GG.GetPcall = function(err, context: string?)
 end
 
 -- Safe pcall wrapper with error handler (global)
-GG.safeCall = function(fn: () -> any, context: string?): boolean, any?
+GG.safeCall = function(fn: () -> any, context: string?): ...(any)
     local success, result = GG.pcalle(fn)
     if not success then
         GG.GetPcall(result, context)

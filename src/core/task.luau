@@ -176,7 +176,7 @@ GG.tsync = function(fn: () -> ())
 end
 
 -- Wrap with timeout (obfuscated: ttimeout)
-GG.ttimeout = function(fn: () -> any, timeout: number): (boolean, any)
+GG.ttimeout = function(fn: () -> any, timeout: number): ...(any)
     local success, result = false, nil
 
     local thread = tk.spawn(function()
