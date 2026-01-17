@@ -15,13 +15,13 @@ end
 
 ------------- Super Global Setup ---
 
--- Fallback chain for environment lookup
-local function getRootEnvironment()
-    return (getgenv and getgenv()) or _G or shared or {}
-end
-
 -- Internal storage for GG values
 local GG_Internal = {}
+
+-- Store original environment references (without metatable)
+local _G_Ref = _G
+local getgenv_Ref = getgenv and getgenv() or nil
+local shared_Ref = shared
 
 -- Protected keys that cannot be overwritten
 local ProtectedKeys = {
@@ -37,22 +37,41 @@ local ProtectedKeys = {
 
 -- Metatable for GG with __index and __newindex
 local GG_Meta = {
-    -- Read: GG → _G → getgenv() fallback chain
+    -- Read: Check internal → _G → getgenv → services
     __index = function(self, key)
         -- First check internal storage
-        if GG_Internal[key] ~= nil then
-            return GG_Internal[key]
+        local val = GG_Internal[key]
+        if val ~= nil then
+            return val
         end
 
-        -- Then check root environment
-        local root = getRootEnvironment()
-        if rawget(root, key) ~= nil then
-            return rawget(root, key)
+        -- Then check _G (rawget, no recursion)
+        val = rawget(_G_Ref, key)
+        if val ~= nil then
+            return val
+        end
+
+        -- Then check getgenv (rawget, no recursion)
+        if getgenv_Ref and getgenv_Ref ~= _G_Ref then
+            val = rawget(getgenv_Ref, key)
+            if val ~= nil then
+                return val
+            end
+        end
+
+        -- Then check shared (rawget, no recursion)
+        if shared_Ref and shared_Ref ~= _G_Ref then
+            val = rawget(shared_Ref, key)
+            if val ~= nil then
+                return val
+            end
         end
 
         -- Service auto-loading (lazy load services)
-        local service = game:GetService(key)
-        if service then
+        local success, service = pcall(function()
+            return game:GetService(key)
+        end)
+        if success and service then
             GG_Internal[key] = service
             return service
         end
@@ -74,7 +93,6 @@ local GG_Meta = {
 
     -- Pair/iteration support
     __pairs = function(self)
-        local root = getRootEnvironment()
         local merged = {}
 
         -- Merge internal storage
@@ -82,8 +100,8 @@ local GG_Meta = {
             merged[k] = v
         end
 
-        -- Merge root environment (internal takes precedence)
-        for k, v in rawget(root, "_G") or rawget(root) or {} do
+        -- Merge _G (rawget only)
+        for k, v in pairs(_G_Ref) do
             if merged[k] == nil then
                 merged[k] = v
             end
@@ -98,8 +116,8 @@ local GG_Meta = {
     end,
 }
 
--- Create GG with metatable
-GG = (getgenv and getgenv()) or _G or shared or {}
+-- Create GG as fresh table (not shared with _G initially)
+GG = {}
 
 -- Apply metatable to GG
 setmetatable(GG, GG_Meta)
@@ -107,6 +125,7 @@ setmetatable(GG, GG_Meta)
 ------------- Core Assignment -------------
 
 GG.GG = GG
+_G.GG = GG -- Also expose to _G
 GG_Maou_init_loaded = true
 
 ------------- OBF Fixer -------------
